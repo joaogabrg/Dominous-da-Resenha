@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dominous da Resenha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        /* Overlay e Cards */
+        
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        .card h1 {
+            font-size: 24px;
+            color: #38bdf8;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        
+        .input-group input:focus {
+            border-color: #38bdf8;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #38bdf8;
+            color: #0f172a;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 8px;
+        }
+        
+        .btn:hover {
+            background: #7dd3fc;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-secondary {
+            background: #334155;
+            color: #f8fafc;
+            margin-top: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        /* Cabeçalho da Mesa */
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            z-index: 20;
+        }
+        
+        .score-board {
+            display: flex;
+            gap: 24px;
+            font-weight: 600;
+        }
+        
+        .team-score {
+            padding: 6px 12px;
+            border-radius: 6px;
+            background: #0f172a;
+            font-size: 14px;
+        }
+        
+        .team-a {
+            color: #38bdf8;
+        }
+        
+        .team-b {
+            color: #f43f5e;
+        }
+        
+        .multiplier-badge {
+            background: #eab308;
+            color: #0f172a;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 8px;
+            display: none;
+        }
+        
+        .game-table {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            overflow: hidden;
+        }
+        /* BARRA DE ZOOM MINIMALISTA */
+        
+        .zoom-bar {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid #334155;
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 30;
+            font-size: 12px;
+            color: #94a3b8;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .zoom-bar input[type=range] {
+            width: 90px;
+            accent-color: #38bdf8;
+            cursor: pointer;
+        }
+        
+        .zoom-btn {
+            background: #334155;
+            border: none;
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        
+        .zoom-btn:hover {
+            background: #475569;
+        }
+        /* Assentos */
+        
+        .seat {
+            position: absolute;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            transition: all 0.3s;
+        }
+        
+        .seat.active {
+            border-color: #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+            color: #fff;
+        }
+        
+        .seat-top {
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .seat-bottom {
+            bottom: 145px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .seat-left {
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .seat-right {
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        /* ÁREA DO TABULEIRO */
+        
+        .board-container {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        .board-chain {
+            position: relative;
+            transition: width 0.2s, height 0.2s;
+        }
+        /* Mão do Jogador */
+        
+        .player-hand-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            position: absolute;
+            bottom: 15px;
+            z-index: 20;
+        }
+        
+        .player-hand {
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #334155;
+            border-radius: 14px;
+            max-width: 95vw;
+            overflow-x: auto;
+            backdrop-filter: blur(8px);
+        }
+        /* PEÇAS DE DOMINÓ DA MÃO */
+        
+        .tile {
+            background: #f8fafc;
+            border-radius: 7px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
+            cursor: pointer;
+            transition: transform 0.2s, border 0.2s;
+            position: relative;
+            border: 2px solid #cbd5e1;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        
+        .tile.horizontal {
+            flex-direction: row;
+        }
+        
+        .tile.playable {
+            border-color: #38bdf8;
+            transform: translateY(-8px);
+            box-shadow: 0 10px 16px rgba(56, 189, 248, 0.35);
+        }
+        
+        .tile-half {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            padding: 1px;
+            place-items: center;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .tile-divider {
+            background: #94a3b8;
+            height: 2px;
+            width: 100%;
+            margin: 1px 0;
+            flex-shrink: 0;
+        }
+        
+        .horizontal .tile-divider {
+            width: 2px;
+            height: 100%;
+            margin: 0 1px;
+        }
+        
+        .pip {
+            width: 7px;
+            height: 7px;
+            background: #0f172a;
+            border-radius: 50%;
+            opacity: 0;
+        }
+        
+        .pip.visible {
+            opacity: 1;
+        }
+        /* Modais e Banners */
+        
+        .modal-choice {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 150;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-box {
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .toast-banner {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #eab308;
+            color: #0f172a;
+            font-weight: 700;
+            padding: 10px 24px;
+            border-radius: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+            z-index: 200;
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        @keyframes popIn {
+            from {
+                transform: translate(-50%, -20px) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0) scale(1);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toast" class="toast-banner"></div>
+
+    <!-- TELA DE ENTRADA -->
+    <div id="lobby-modal" class="overlay">
+        <div class="card">
+            <h1>Dominous da Resenha</h1>
+            <div class="input-group">
+                <label>Seu Nome</label>
+                <input type="text" id="username" placeholder="Digite seu nome" maxlength="12">
+            </div>
+            <div class="input-group">
+                <label>Código da Sala</label>
+                <input type="text" id="room-code" placeholder="Ex: SALA123" style="text-transform:uppercase">
+            </div>
+            <div class="input-group">
+                <label>Senha da Sala</label>
+                <input type="password" id="room-pass" placeholder="Senha">
+            </div>
+            <button class="btn" onclick="joinRoom()">Entrar / Criar Sala</button>
+            <button class="btn btn-secondary" onclick="shareRoomLink()">Copiar Link da Sala</button>
+        </div>
+    </div>
+
+    <!-- SELEÇÃO DE POSIÇÃO -->
+    <div id="seat-modal" class="overlay" style="display:none">
+        <div class="card">
+            <h1>Escolha sua Posição</h1>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 20px;">Dupla A: Posições 1 e 3 | Dupla B: Posições 2 e 4</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;" id="seat-buttons"></div>
+        </div>
+    </div>
+
+    <!-- MODAL DE SELEÇÃO DE PONTA -->
+    <div id="choice-modal" class="modal-choice" style="display:none">
+        <div class="modal-box">
+            <h3>Onde deseja jogar a peça?</h3>
+            <div class="modal-buttons">
+                <button class="btn" onclick="confirmPlay('left')">Ponta Esquerda</button>
+                <button class="btn" onclick="confirmPlay('right')">Ponta Direita</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INTERFACE DO JOGO -->
+    <div class="app-header">
+        <div style="font-weight: 700; color: #38bdf8;">DOMINOUS DA RESENHA <span id="display-room-code" style="color:#64748b; font-size:12px;"></span></div>
+        <div class="score-board">
+            <div class="team-score team-a">Dupla A: <span id="score-a">0</span>/4</div>
+            <div class="team-score team-b">Dupla B: <span id="score-b">0</span>/4</div>
+            <div id="double-badge" class="multiplier-badge">PROX. RODADA DOBRO!</div>
+        </div>
+    </div>
+
+    <div class="game-table">
+        <!-- CONTROLE DE ZOOM DA MESA -->
+        <div class="zoom-bar">
+            <span>Zoom:</span>
+            <button class="zoom-btn" onclick="adjustZoom(-0.1)">-</button>
+            <input type="range" id="zoom-slider" min="0.6" max="2.0" step="0.1" value="1.0" oninput="setZoom(this.value)">
+            <button class="zoom-btn" onclick="adjustZoom(0.1)">+</button>
+            <span id="zoom-value" style="min-width: 35px; text-align: right; font-weight: 600; color: #f8fafc;">100%</span>
+        </div>
+
+        <div id="seat-pos-2" class="seat seat-top">Aguardando...</div>
+        <div id="seat-pos-1" class="seat seat-left">Aguardando...</div>
+        <div id="seat-pos-3" class="seat seat-right">Aguardando...</div>
+        <div id="seat-pos-0" class="seat seat-bottom">Aguardando...</div>
+
+        <div class="board-container">
+            <div class="board-chain" id="board"></div>
+        </div>
+
+        <div class="player-hand-container">
+            <div class="player-hand" id="hand"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        let currentRoom = null;
+        let mySeat = null;
+        let selectedTileIndex = null;
+        let gameState = null;
+        let currentZoom = 1.0;
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('room')) {
+                document.getElementById('room-code').value = params.get('room').toUpperCase();
+            }
+        };
+
+        window.onresize = () => {
+            if (gameState && gameState.board) {
+                renderBoard(gameState.board);
+            }
+        };
+
+        function setZoom(val) {
+            currentZoom = parseFloat(val);
+            document.getElementById('zoom-value').innerText = Math.round(currentZoom * 100) + '%';
+            document.getElementById('zoom-slider').value = currentZoom;
+            if (gameState && gameState.board) {
+                renderBoard(gameState.board);
+            }
+        }
+
+        function adjustZoom(delta) {
+            const newZoom = Math.min(2.0, Math.max(0.6, currentZoom + delta));
+            setZoom(newZoom);
+        }
+
+        function shareRoomLink() {
+            const code = document.getElementById('room-code').value.trim().toUpperCase();
+            if (!code) return alert("Digite o código da sala!");
+            const url = `${window.location.origin}?room=${code}`;
+            navigator.clipboard.writeText(url);
+            alert("Link da sala copiado para a área de transferência!");
+        }
+
+        function joinRoom() {
+            const name = document.getElementById('username').value.trim();
+            const room = document.getElementById('room-code').value.trim().toUpperCase();
+            const pass = document.getElementById('room-pass').value.trim();
+
+            if (!name || !room) return alert("Preencha nome e código da sala.");
+
+            currentRoom = room;
+            socket.emit('join_room', {
+                roomCode: room,
+                password: pass,
+                username: name
+            });
+        }
+
+        socket.on('joined_room', (data) => {
+            document.getElementById('lobby-modal').style.display = 'none';
+            document.getElementById('seat-modal').style.display = 'flex';
+            document.getElementById('display-room-code').innerText = `[${data.roomCode}]`;
+            updateSeatSelection(data.seats);
+        });
+
+        socket.on('error_msg', (msg) => alert(msg));
+        socket.on('seats_update', (seats) => updateSeatSelection(seats));
+
+        function updateSeatSelection(seats) {
+            const container = document.getElementById('seat-buttons');
+            container.innerHTML = '';
+            seats.forEach((seat, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn ' + (seat ? 'btn-secondary' : '');
+                btn.innerText = seat ? `Posição ${idx+1}: ${seat.name}` : `Escolher Posição ${idx+1}`;
+                btn.disabled = !!seat;
+                btn.onclick = () => {
+                    socket.emit('select_seat', {
+                        roomCode: currentRoom,
+                        seatIndex: idx
+                    });
+                    mySeat = idx;
+                    document.getElementById('seat-modal').style.display = 'none';
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        const pipLayouts = {
+            0: [],
+            1: [4],
+            2: [0, 8],
+            3: [0, 4, 8],
+            4: [0, 2, 6, 8],
+            5: [0, 2, 4, 6, 8],
+            6: [0, 2, 3, 5, 6, 8]
+        };
+
+        function renderHalf(val, customPipSize = null) {
+            const half = document.createElement('div');
+            half.className = 'tile-half';
+            const pips = pipLayouts[val] || [];
+            for (let i = 0; i < 9; i++) {
+                const pip = document.createElement('div');
+                pip.className = 'pip' + (pips.includes(i) ? ' visible' : '');
+                if (customPipSize) {
+                    pip.style.width = customPipSize + 'px';
+                    pip.style.height = customPipSize + 'px';
+                }
+                half.appendChild(pip);
+            }
+            return half;
+        }
+
+        function createTileElement(tile, isHorizontal = false) {
+            const el = document.createElement('div');
+            el.className = 'tile' + (isHorizontal ? ' horizontal' : '');
+            if (!isHorizontal) {
+                el.style.width = '55px';
+                el.style.height = '100px';
+            } else {
+                el.style.width = '100px';
+                el.style.height = '55px';
+            }
+            el.appendChild(renderHalf(tile[0]));
+            const div = document.createElement('div');
+            div.className = 'tile-divider';
+            el.appendChild(div);
+            el.appendChild(renderHalf(tile[1]));
+            return el;
+        }
+
+        function createBoardTileElement(tile, isVert, isFlipped, width, height, pipSize) {
+            const el = document.createElement('div');
+            el.className = 'tile' + (!isVert ? ' horizontal' : '');
+            el.style.width = width + 'px';
+            el.style.height = height + 'px';
+
+            const val1 = isFlipped ? tile[1] : tile[0];
+            const val2 = isFlipped ? tile[0] : tile[1];
+
+            el.appendChild(renderHalf(val1, pipSize));
+            const div = document.createElement('div');
+            div.className = 'tile-divider';
+            el.appendChild(div);
+            el.appendChild(renderHalf(val2, pipSize));
+
+            return el;
+        }
+
+        function renderBoard(board) {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+
+            if (!board || board.length === 0) {
+                boardEl.style.width = '0px';
+                boardEl.style.height = '0px';
+                return;
+            }
+
+            const baseL = 58;
+            const baseS = 30;
+
+            const L = Math.round(baseL * currentZoom);
+            const S = Math.round(baseS * currentZoom);
+            const gap = Math.max(2, Math.round(4 * currentZoom));
+            const pipSize = Math.max(3, Math.round(6 * currentZoom));
+
+            const containerWidth = document.querySelector('.board-container').clientWidth;
+            const maxRowWidth = Math.max(220, Math.min(containerWidth - 60, 600));
+
+            let currX = 0;
+            let currY = 0;
+            let dir = 'RIGHT';
+
+            const positions = [];
+
+            for (let i = 0; i < board.length; i++) {
+                const tile = board[i];
+                const isDouble = (tile[0] === tile[1]);
+
+                let w, h, isVert, isFlipped;
+
+                if (dir === 'RIGHT') {
+                    if (isDouble) {
+                        w = S;
+                        h = L;
+                        isVert = true;
+                        isFlipped = false;
+                        if (currX + w > maxRowWidth && i > 0) {
+                            dir = 'LEFT';
+                            const x = currX - S;
+                            const y = currY + S + gap;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w: S,
+                                h: L,
+                                isVert: true,
+                                isFlipped: false
+                            });
+                            currY = y + L + gap;
+                            currX = x;
+                        } else {
+                            const x = currX;
+                            const y = currY - (L - S) / 2;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w,
+                                h,
+                                isVert,
+                                isFlipped
+                            });
+                            currX += w + gap;
+                        }
+                    } else {
+                        w = L;
+                        h = S;
+                        isVert = false;
+                        isFlipped = false;
+                        if (currX + w > maxRowWidth && i > 0) {
+                            dir = 'LEFT';
+                            const x = currX - S;
+                            const y = currY + S + gap;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w: S,
+                                h: L,
+                                isVert: true,
+                                isFlipped: false
+                            });
+                            currY = y + L + gap;
+                            currX = x;
+                        } else {
+                            const x = currX;
+                            const y = currY;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w,
+                                h,
+                                isVert,
+                                isFlipped
+                            });
+                            currX += w + gap;
+                        }
+                    }
+                } else if (dir === 'LEFT') {
+                    if (isDouble) {
+                        w = S;
+                        h = L;
+                        isVert = true;
+                        isFlipped = false;
+                        if (currX - w < 0 && i > 0) {
+                            dir = 'RIGHT';
+                            const x = currX;
+                            const y = currY + S + gap;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w: S,
+                                h: L,
+                                isVert: true,
+                                isFlipped: false
+                            });
+                            currY = y + L + gap;
+                            currX = x + S + gap;
+                        } else {
+                            const x = currX - w;
+                            const y = currY - (L - S) / 2;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w,
+                                h,
+                                isVert,
+                                isFlipped
+                            });
+                            currX -= (w + gap);
+                        }
+                    } else {
+                        w = L;
+                        h = S;
+                        isVert = false;
+                        isFlipped = true;
+                        if (currX - w < 0 && i > 0) {
+                            dir = 'RIGHT';
+                            const x = currX;
+                            const y = currY + S + gap;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w: S,
+                                h: L,
+                                isVert: true,
+                                isFlipped: false
+                            });
+                            currY = y + L + gap;
+                            currX = x + S + gap;
+                        } else {
+                            const x = currX - w;
+                            const y = currY;
+                            positions.push({
+                                tile,
+                                x,
+                                y,
+                                w,
+                                h,
+                                isVert,
+                                isFlipped
+                            });
+                            currX -= (w + gap);
+                        }
+                    }
+                }
+            }
+
+            let minX = Infinity,
+                minY = Infinity,
+                maxX = -Infinity,
+                maxY = -Infinity;
+            positions.forEach(p => {
+                if (p.x < minX) minX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.x + p.w > maxX) maxX = p.x + p.w;
+                if (p.y + p.h > maxY) maxY = p.y + p.h;
+            });
+
+            const boardWidth = maxX - minX;
+            const boardHeight = maxY - minY;
+
+            boardEl.style.width = boardWidth + 'px';
+            boardEl.style.height = boardHeight + 'px';
+
+            positions.forEach(p => {
+                const posX = p.x - minX;
+                const posY = p.y - minY;
+                const tileEl = createBoardTileElement(p.tile, p.isVert, p.isFlipped, p.w, p.h, pipSize);
+                tileEl.style.position = 'absolute';
+                tileEl.style.left = posX + 'px';
+                tileEl.style.top = posY + 'px';
+                boardEl.appendChild(tileEl);
+            });
+        }
+
+        socket.on('game_update', (state) => {
+            gameState = state;
+            document.getElementById('score-a').innerText = state.scores[0];
+            document.getElementById('score-b').innerText = state.scores[1];
+            document.getElementById('double-badge').style.display = state.nextRoundMultiplier > 1 ? 'inline-block' : 'none';
+
+            const seatPositions = [0, 1, 2, 3];
+            const offset = mySeat !== null ? mySeat : 0;
+
+            seatPositions.forEach((posIdx) => {
+                const actualSeat = (posIdx + offset) % 4;
+                const targetEl = document.getElementById(`seat-pos-${posIdx}`);
+                const player = state.players[actualSeat];
+
+                if (player) {
+                    const isTurn = state.turn === actualSeat && state.status === 'playing';
+                    targetEl.className = `seat seat-${posIdx === 0 ? 'bottom' : posIdx === 1 ? 'left' : posIdx === 2 ? 'top' : 'right'} ${isTurn ? 'active' : ''}`;
+                    targetEl.innerHTML = `${player.name} (${player.handCount} peças) ${isTurn ? '<b>• SUA VEZ</b>' : ''}`;
+                } else {
+                    targetEl.innerText = "Aguardando...";
+                }
+            });
+
+            renderBoard(state.board);
+
+            const handEl = document.getElementById('hand');
+            handEl.innerHTML = '';
+
+            if (mySeat !== null && state.players[mySeat]) {
+                const myHand = state.myHand || [];
+                const isMyTurn = state.turn === mySeat && state.status === 'playing';
+
+                myHand.forEach((tile, idx) => {
+                    const tileEl = createTileElement(tile, false);
+
+                    if (isMyTurn) {
+                        const canPlay = canPlayTileClient(tile, state.leftEnd, state.rightEnd, myHand, state);
+                        if (canPlay) {
+                            tileEl.classList.add('playable');
+                            tileEl.onclick = () => handleTileClick(idx, tile);
+                        }
+                    }
+                    handEl.appendChild(tileEl);
+                });
+            }
+        });
+
+        // VALIDAÇÃO DE PEÇAS JOGÁVEIS (CORRIGIDO: TRAVA DO CAMBURÃO DE 6)
+        function canPlayTileClient(tile, left, right, myHand, state) {
+            if (left === null && right === null) {
+                const hasSixSix = myHand ? myHand.some(t => t[0] === 6 && t[1] === 6) : false;
+                const requiresSix = state && state.mustPlaySix === false ? false : true;
+
+                if (requiresSix && hasSixSix) {
+                    return tile[0] === 6 && tile[1] === 6;
+                }
+                return true;
+            }
+            return tile[0] === left || tile[1] === left || tile[0] === right || tile[1] === right;
+        }
+
+        function handleTileClick(index, tile) {
+            selectedTileIndex = index;
+            const left = gameState.leftEnd;
+            const right = gameState.rightEnd;
+            const myHand = gameState.myHand || [];
+
+            // BLOQUEIO REFORÇADO DE SEGURANÇA NO CLIQUE
+            if (left === null && right === null) {
+                const hasSixSix = myHand.some(t => t[0] === 6 && t[1] === 6);
+                const requiresSix = gameState && gameState.mustPlaySix === false ? false : true;
+
+                if (requiresSix && hasSixSix && !(tile[0] === 6 && tile[1] === 6)) {
+                    const toast = document.getElementById('toast');
+                    toast.innerText = "Atenção: Você deve obrigatoriamente sair com o Camburão de 6 (6|6)!";
+                    toast.style.display = 'block';
+                    setTimeout(() => {
+                        toast.style.display = 'none';
+                    }, 4000);
+                    return;
+                }
+
+                socket.emit('play_tile', {
+                    roomCode: currentRoom,
+                    tileIndex: index,
+                    side: 'left'
+                });
+                return;
+            }
+
+            const fitsLeft = tile[0] === left || tile[1] === left;
+            const fitsRight = tile[0] === right || tile[1] === right;
+
+            if (fitsLeft && fitsRight && left !== right) {
+                document.getElementById('choice-modal').style.display = 'flex';
+            } else if (fitsLeft) {
+                socket.emit('play_tile', {
+                    roomCode: currentRoom,
+                    tileIndex: index,
+                    side: 'left'
+                });
+            } else {
+                socket.emit('play_tile', {
+                    roomCode: currentRoom,
+                    tileIndex: index,
+                    side: 'right'
+                });
+            }
+        }
+
+        function confirmPlay(side) {
+            document.getElementById('choice-modal').style.display = 'none';
+            if (selectedTileIndex !== null) {
+                socket.emit('play_tile', {
+                    roomCode: currentRoom,
+                    tileIndex: selectedTileIndex,
+                    side
+                });
+            }
+        }
+
+        socket.on('special_event', (msg) => {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 4000);
+        });
+    </script>
+</body>
+
+</html>
